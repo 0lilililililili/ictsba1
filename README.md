@@ -1,18 +1,18 @@
-#HKDSE ICT SBA
+# HKDSE ICT SBA
 
-##Extracurricular Activity Management System (ECAMS) Prototype
+## Extracurricular Activity Management System (ECAMS) Prototype
 
-##CHEN KA YING 11M 5
+## CHEN KA YING 11M 5
 
-###Submission Date: 8.28.2026
+### Submission Date: 8.28.2026
  
-ABSTRACT
+# ABSTRACT
 	ABC College is planning to develop an Extracurricular Activity Management System (ECAMS) to streamline the process of tracking student participation and attendance in extracurricular activities. The new system allows different groups of users to marking, check, and analyze attendance and participation statuses for their assigned activities using a tablet or mobile device.
 	Here, the development process of a prototype for this system will be documented and elucidated.
 	This report will include relationships, ER diagram, views of the database; and the creating process, reference codes, as well as usage demonstration of both the database and the dynamic webpage user interface.
  
-#Part A: Understanding of the ECAMS System
-##1.	Relationships
+# Part A: Understanding of the ECAMS System
+## 1.	Relationships
   According to the background information provided, there are mainly 3 groups of stakeholders using this system: Students (both regular members and activity monitors), Teachers(both club teachers and administrators), and Clubs.
   Relationships of the stakeholders are as follows:
     1.	Student must join at least 1 club,
@@ -33,11 +33,11 @@ ABSTRACT
     4.	One participation record must only be referring to one activity,
     One activity must consists of more than one participant request;
 	
-##2.	Entity
+## 2.	Entity
   Now that we have all the relationships, there should be total of 6 entities:
   student, enrollment, club, teacher, participation, activity.
 
-##3.	Attribute and Schema
+## 3.	Attribute and Schema
   For the table student, it should consists the basic information of the students, including their id, name, class and class number: 
   student {sid, sname, scls, scno};
   For the table teacher, it includes the details of including teachers’ id and name: 
@@ -51,26 +51,26 @@ ABSTRACT
   For the table activity, it should contain details like activity id, name, date, venue, attended rate, its student monitor, and the club that holds it: 
   activity {aid, aname, adate, venue, attendance, cid, stuMon};
 
-#Part B: Database
-##1.	Normalization
+# Part B: Database
+## 1.	Normalization
   Taking note of the ECAMS system’s nature of needing frequent updates, it would be prone to insertion, update, and deletion anomaly. So it would be best for our database to follow a 3NF format (3rd normal form: no transitive functional dependency, no partial functional dependency, no repeating attributes) to prevent anomalies above.
   First, we already confirmed the tables above have no repeating attributes when creating them. Then, after checking all tables, we confirmed that there is no transitive functional dependency, as all other attributes only depend on the primary key of the table. Lastly, we should also check if all tables have no partial functional dependency.
   For other tables apart from participation, there should be no dispute over the fact. However, as a table with composite PK, we should check participation carefully.
   Upon examination, we can see that participation only has 3 attributes, with SID+AID being the primary key. Hence, we only needed to check if the remaining attribute, STATUS, if fully dependent on SID+AID and not just one of them. This is true since the status of a distinct participation request requires information on both the student who requested it and their activity.
   Thus, all requirements of the 3NF is fulfilled and no changes are need to be made to the initial schema.
  
-##2.	ER Diagram
+## 2.	ER Diagram
   With reference to the schema in the previous section, the ER diagram is as follows:  
 <img width="927" height="618" alt="ERdiagram" src="https://github.com/user-attachments/assets/997c5af4-2f9e-4d7e-8aed-eafbc0828b42" />
 
 
-##3.	Points to Note: Attendance-Status Field Relationship
+## 3.	Points to Note: Attendance-Status Field Relationship
   Before testing whether this system works, allow me to explain the relationship of certain attributes and tables. There should be no problems when inserting values into the tables student, teacher, club, and enrollment, as these data are only one-way independent (where data in table A depends on B, and data in table B is not, both directly or indirectly, dependent on A). Just that we have to insert data in the order of ‘student -> teacher -> club -> enrollment’ as club and enrollment have foreign keys that reference on student and teacher. 
   However, when we closely inspect the tables participation and activity, we can see there are some logic loopholes, as some data are two-way dependent. Note that attendance means the attended rate of some activity, whose data value depends on the status attribute of the table participation. On the other hand, status is dependent on aid+sid, which references the student table and most importantly the activity table. Long story short, there would be an error when inserting values into the two tables no matter the order of doing so, as they are dependent on each other. We can simply not include the field when inserting data, but that does not solve our problems.
   Against this backdrop, we first set the field attendance is null by default. Then, we have to create automatic mechanism that sets off and alter attendance every time status is updated. Thus, our solution is to use the ‘trigger’ key to update the field in the background.
   Of course, another way would have been not creating this field in the first place. But by doing so, if we have to analyze the activity performance by taking its attendance rate and so on, we have to type and execute a very long command every time. So for the sake of user experience and convenience, it is better include this field and have it auto update in the background instead.
 
-##4.	SQL Query Demonstration
+## 4.	SQL Query Demonstration
   For convenience, we would assume that all sid starts with the letter ‘s’, all tid starts with the letter ‘t’, all cid starts with the letter ‘c’, and all aid starts with letter ‘a’.
   First, we should create the database ecams using the SQL code below to store tables and data.
   For the field attendance, the code below will set off a trigger whenever a participation record is inserted, updated or deleted.
@@ -79,7 +79,7 @@ ABSTRACT
   
   As demonstrated, we have finally developed a usable database successfully.
  
-##5.	Authorization
+## 5.	Authorization
   As the background information indicates, there should be 4 types of users in this system: regular students, students who are activity monitors, club teachers, and teacher in charge as administrators.
   That said, they should be distinguished and have access to different degrees of necessary information to protect user’s privacy. In this case, a view is created for each of these roles.
   Admins supervising the database have editing access to every data (without view);
@@ -87,36 +87,36 @@ ABSTRACT
   Student monitors can edit their own data, participation status of students in their assigned activity, and data of the activities.
   Regular students can only edit their own data.
   
-#Part C: User Interface Dynamic Webpage
-##1.	Design Logic
+# Part C: User Interface Dynamic Webpage
+## 1.	Design Logic
 	The aim of this webpage will be to allow different types of users to get access to the information they need. To distinguish between the users, we first needed a login page to verify their identity. 
 Then, according to their roles, their information page shows different outputs. In the information page, it should include all the sql views and present them as dashboards.
 Underneath each view, there should be an ‘edit’ and ‘insert’ button for users to modify, add or delete data.
 
-##2.	Webpage Components
+## 2.	Webpage Components
   Full code will be included in the appendix.
   For all webpages, even though we did not include the enlarge font size button directly, users can still zoom in / out on their own device to ensure readability.
 
-###1.	Database
+### 1.	Database
   Before creating the login page where users enter their role (student / monitor / teacher / admin), id and password, we have to add missing key components to our database: the role and password attributes. For convenience, assume the teacher with tid = ‘t0001’ is the admin and all passwords are initially ‘12345678’:
 
-###2.	Login Page
+### 2.	Login Page
   For the login page, we first design the outlook of the page. As shown in the picture and code below, the user first chooses their role (which will be verified by checking table student or teacher) with a radio button, which increased user friendliness and reduce input error; it decides what data they can be exposed to, then, they enter their id (sid / tid) and password to log in.
   After clicking the ‘log in’ button, we will then process the request in the file process.php, which checks if the role, user id and password matches the record in student or teacher. The system will show ‘wrong role’ or ‘invalid password’ if theres an error in the users’ input.
        
-###3.	Dashboard View
+### 3.	Dashboard View
   After verifying the user, the webpage will be redirected to the dashboard. There, the data will be separated into many sections: personal data (table student or teacher), request records (enrollment and participation), club (if user is a teacher), activity (if user is a student monitor or a teacher). In the teachers’ and student monitors’ view, participation will be further separated into sections grouping by their aid.
   At first, all data in dashboards are read-only before pressing the ‘modify’ button. This prevents any action that alters our data unintentionally.
 
-###4.	Update and Delete
+### 4.	Update and Delete
   When we press ‘modify’, the status ‘read-only’ will turn to ‘disabled’ status. This allows users to edit their authorized data.
   Upon pressing ‘modify’, users can freely type whatever they need to change in the text box. After they press confirm, the record will be changed and also the data in the ecams database, then the status will switch back to read-only; if the user pressed ‘discard’, the changes made in the text box will switch back to the initial value before the change and status will switch back to read-only.
 
-###5.	Insert
+### 5.	Insert
   As the admin, the user has the authority to insert to rewrite every record in the database. By pressing the ‘overwrite/insert’ button, they can modify by overwriting existing records or insert new records using the same page. To increase user friendliness and reduce transcription or transposition error, a date-picker.is used for picking activity dates etc.
   After user action or wanting to discard changes, simply press the ‘go back to data’ button to redirect back to the dashboards.
       
-###6.	Rollback
+## 6.	Rollback
   If a user confirmed a wrong modification, an undo button will appear on the top right corner. This allows users to retrieve the changes made to the data. However, the undo button can only perform rollback once after each change due to its mechanism.
 	For how this undo button works, it slightly differs from the default rollback function in MySQL. 
   Due to our added triggers on participation and activity, the initial rollback function provided may not work and will potentially cause errors to our database. 
@@ -125,13 +125,13 @@ Underneath each view, there should be an ‘edit’ and ‘insert’ button for 
   Thus, our approach on this function will be taking a copy of the initial data when users click ‘modify’ or ‘overwrite / insert’ (for admins), then store it as the output of the undo function. This ‘undo’ function will act as a new request using a new connection to overwrite the wrong changes on the previous data.
   But since this method only works every time the user clicks ‘modify’, it means that we can only restore the section’s data once ------ right before user made changes (the data of a whole session will be restored as one ‘modify’ button is corresponded to one session). Thus this is our only limitation.
 
-###7.	Log out
+### 7.	Log out
   After viewing or editing the dashboard, users will log out to ensure data security. They can do this by pressing the red ‘log out’ button on the top right corner. This will direct them straight back to the login page.
   Thus, we have finished developing and documenting the prototype of the ECAMS system. This is the end of the documentation report.
 
-##Below are references, disclaimers and appendices.
+## Below are references and disclaimers.
  
-#References and Disclaimer
+# References and Disclaimer
   Usage of php code mainly and highly references the HKDSE ICT elective B textbook.
   All codes and commands in the report are original.
   The ER diagram of ecams was created via the editing application Paint in 2026 by Chen Ka Ying for HKDSE ICT SBA usage only
