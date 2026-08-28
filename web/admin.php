@@ -1,6 +1,48 @@
 <?php
 session_start();
 
+if (isset($_GET['action']) && $_GET['action'] === 'undo' && isset($_SESSION['undo_action'])) {
+    $host = "localhost";
+    $db_user = "root";
+    $db_pass = "";
+    $db_name = "ecams";
+    $conn = new mysqli($host, $db_user, $db_pass, $db_name);
+    if (!$conn->connect_error) {
+        $undo = $_SESSION['undo_action'];
+        $tbl = $undo['table'];
+        $data = $undo['data'];
+        
+        if ($tbl === 'student') {
+            $stmt = $conn->prepare("REPLACE INTO student (sid, sname, scls, scno, role, pw) VALUES (?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("sssiss", $data['sid'], $data['sname'], $data['scls'], $data['scno'], $data['role'], $data['pw']);
+            $stmt->execute(); $stmt->close();
+        } elseif ($tbl === 'teacher') {
+            $stmt = $conn->prepare("REPLACE INTO teacher (tid, tname, role, pw) VALUES (?, ?, ?, ?)");
+            $stmt->bind_param("ssss", $data['tid'], $data['tname'], $data['role'], $data['pw']);
+            $stmt->execute(); $stmt->close();
+        } elseif ($tbl === 'club') {
+            $stmt = $conn->prepare("REPLACE INTO club (cid, cname, tid) VALUES (?, ?, ?)");
+            $stmt->bind_param("sss", $data['cid'], $data['cname'], $data['tid']);
+            $stmt->execute(); $stmt->close();
+        } elseif ($tbl === 'activity') {
+            $stmt = $conn->prepare("REPLACE INTO activity (aid, aname, adate, venue, attendance, cid, stuMon) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            $stmt->bind_param("sssssss", $data['aid'], $data['aname'], $data['adate'], $data['venue'], $data['attendance'], $data['cid'], $data['stuMon']);
+            $stmt->execute(); $stmt->close();
+        } elseif ($tbl === 'enrollment') {
+            $stmt = $conn->prepare("REPLACE INTO enrollment (sid, cid) VALUES (?, ?)");
+            $stmt->bind_param("ss", $data['sid'], $data['cid']);
+            $stmt->execute(); $stmt->close();
+        } elseif ($tbl === 'participation') {
+            $stmt = $conn->prepare("REPLACE INTO participation (sid, aid, status) VALUES (?, ?, ?)");
+            $stmt->bind_param("ssi", $data['sid'], $data['aid'], $data['status']);
+            $stmt->execute(); $stmt->close();
+        }
+        unset($_SESSION['undo_action']);
+        header("Location: admin_write.php?table=" . urlencode($_GET['table'] ?? '') . "&undosuccess=1");
+        exit;
+    }
+}
+
 if (!isset($_SESSION['userid']) || $_SESSION['role'] !== 'admin') {
     die("youre not admin");
 }
@@ -23,6 +65,10 @@ if (!in_array($target_table, $allowed_tables)) {
 }
 
 $message = "";
+
+if (isset($_GET['undosuccess'])) {
+    $message = "<div style='color: #0c5460; background-color: #d1ecf1; padding: 10px; border-radius: 4px; margin-bottom: 15px;'>undo-ed ok</div>";
+}
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
     

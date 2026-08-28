@@ -160,6 +160,11 @@ if ($role === 'student' || $role === 'monitor') {
             <h2>ecams</h2>
             <p>user: <strong><?php echo htmlspecialchars($user_id); ?></strong> | role : <?php echo htmlspecialchars($role); ?></span></p>
         </div>
+
+         <?php if (isset($_SESSION['undo_action'])): ?>
+            <a href="update.php?action=perform_undo" class="btn-undo-header">⟲ Undo</a>
+        <?php endif; ?>
+
         <a href="logout.php" class="btn-logout">log out</a>
     </div>
 
